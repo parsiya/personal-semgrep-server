@@ -1,0 +1,21 @@
+rules:
+- id: snprintf-insecure-use
+  patterns:
+    - pattern-either:
+        - pattern: |
+            $RET = snprintf($BUF, ...);
+            ...
+            $BUF[$RET] = $VAR;
+        - pattern: |
+            $LEN = snprintf($NULL, 0, ...);
+            ...
+            $P = malloc($LEN);
+  message: Potentially vulnerable snprintf usage.
+  languages:
+    - cpp
+    - c
+  severity: WARNING
+  metadata:
+    category: hotspot
+    references:
+      - https://dustri.org/b/playing-with-weggli.html

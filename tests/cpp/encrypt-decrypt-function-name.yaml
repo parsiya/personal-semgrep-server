@@ -1,0 +1,18 @@
+rules:
+- id: encrypt-decrypt-function-name
+  patterns:
+    - pattern: |
+        $FUNC(...);
+    - metavariable-regex:
+        metavariable: $FUNC
+        regex: .*(encrypt|decrypt).*
+  message: |
+      $FUNC name contains encrypt/decrypt. These functions are usually intersting.     
+  languages:
+    - cpp
+    - c
+  severity: WARNING
+  metadata:
+    category: hotspot
+    references:
+      - https://parsiya.net/blog/2022-04-07-code-review-hotspots-with-semgrep/#function-with-encode-and-decode-in-their-names

@@ -1,0 +1,22 @@
+rules:
+- id: arrays-out-of-bounds-access
+  patterns:
+    - pattern-either:
+        - pattern: |
+            $TYPE $BUF[$SIZE];
+            ...
+            $BUF[$INDEX] = $VALUE;
+        - pattern: |
+            $TYPE $BUF[$SIZE];
+            ...
+            $VAR = $BUF[$INDEX];
+    - metavariable-comparison:
+        metavariable: $INDEX
+        comparison: $INDEX >= $SIZE
+  message: $BUF was accessed in '$BUF[$INDEX]' where $INDEX >= $SIZE.
+  languages:
+    - cpp
+    - c
+  severity: ERROR
+  metadata:
+    category: hotspot

@@ -1,0 +1,19 @@
+rules:
+- id: encode-decode-function-name
+  patterns:
+    - pattern: |
+        $FUNC(...);
+    - metavariable-regex:
+        metavariable: $FUNC
+        regex: .*(encode|decode).*
+  message: |
+      $FUNC name contains encode/decode. These functions are usually intersting.     
+  languages:
+    - cpp
+    - c
+  severity: WARNING
+  metadata:
+    category: hotspot
+    references:
+      - https://github.com/googleprojectzero/weggli/blob/main/README.md
+      - https://parsiya.net/blog/2022-04-07-code-review-hotspots-with-semgrep/#function-with-encode-and-decode-in-their-names

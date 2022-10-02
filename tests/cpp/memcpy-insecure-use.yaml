@@ -1,0 +1,15 @@
+rules:
+- id: memcpy-insecure-use
+  pattern: |
+      $TYPE $BUF[$SIZE];
+      ...
+      memcpy(..., $BUF, ...);
+  message: Check the third parameter against the size of both destination and source.
+  languages:
+    - cpp
+    - c
+  severity: WARNING
+  metadata:
+    category: hotspot
+    references:
+      - https://dustri.org/b/playing-with-weggli.html

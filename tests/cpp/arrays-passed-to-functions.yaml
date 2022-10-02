@@ -1,0 +1,50 @@
+rules:
+- id: arrays-passed-to-functions
+  patterns:
+    # a lot of ways to create an array
+    - pattern-either:
+      - pattern-inside: |
+          $TYPE $BUF[$SIZE] = $EXPR;
+          ...
+      - pattern-inside: |
+          $TYPE $BUF[$SIZE];
+          ...
+      - pattern-inside: |
+          $TYPE $BUF[] = $EXPR;
+          ...
+      - pattern-inside: |
+          $BUF = ($CASTTYPE) malloc($SIZE);
+          ...
+      - pattern-inside: |
+          $BUF = ($CASTTYPE) calloc($NUM, $SIZE);
+          ...
+      - pattern-inside: |
+          $BUF = ($CASTTYPE) realloc($OLDPTR, $SIZE);
+          ...
+      # this doesn't work yet, but probably not needed anyways
+      # - pattern-inside: $FUNC(..., $VARTYPE* $BUF, ...) { ... }
+    # we don't want to flag these usages again
+    - pattern-not-inside: free($BUF);
+    - pattern-not-inside: delete($BUF);
+    - pattern-not-inside: malloc(..., $BUF, ...);
+    - pattern-not-inside: calloc(..., $BUF, ...);
+    - pattern-not-inside: realloc(..., $BUF, ...);
+    # sizeof(ptr*) rule checks for this
+    - pattern-not-inside: sizeof($BUF);
+    # covered by memcpy-insecure-use
+    - pattern-not-inside: memcpy(..., $BUF,...);
+    # exclude uppercase variables, these are usually constants
+    - metavariable-regex:
+        metavariable: $BUF
+        regex: (?![A-Z0-9_]+\b)
+    # flag if it's passed to a function
+    - pattern: $FUNC(..., $BUF, ...);
+  message: |
+      $BUF is an array. It's passed to $FUNC. Check if a length is also passed.
+      If not, check if $FUNC is aware of its length somehow. If not, check for
+      buffer over read/write.
+  languages:
+    - cpp
+  severity: WARNING
+  metadata:
+    category: hotspot

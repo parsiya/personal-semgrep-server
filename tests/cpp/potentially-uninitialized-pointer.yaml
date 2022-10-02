@@ -1,0 +1,21 @@
+rules:
+- id: potentially-uninitialized-pointer
+  patterns:
+    - pattern: |
+        $TYPE* $BUF[$SIZE];
+        ...
+        $FUNC(..., &$BUF, ...);
+    - pattern-not-inside: |
+        $TYPE* $BUF[$SIZE];
+        ...
+        $BUF = $VALUE;
+        ...
+        $FUNC(..., &$BUF, ...);
+  message: $BUF pointer must be initialized before use.
+  languages:
+    - cpp
+    - c
+  # This rule is noisy.
+  severity: INFO
+  metadata:
+    category: hotspot
