@@ -1,8 +1,17 @@
-use std::env;
-use std::path::Path;
-use walkdir::{DirEntry, WalkDir};
+use std::{env, collections::HashMap, io, fs};
 
-const RULE_EXTENSION: [&str; 2] = ["yml", "yaml"];
+use semgrep_rs::{utils::check_path_panic, RuleIndex, semgrep_rule::RuleFile};
+
+use crate::ruleset::RuleSet;
+
+mod ruleset;
+
+
+// read a file and return a String.
+fn read_file_to_string(file_path: &str) -> io::Result<String> {
+    let contents = fs::read_to_string(file_path)?;
+    Ok(contents)
+}
 
 fn main() {
 
@@ -10,59 +19,54 @@ fn main() {
 
     // this will panic if nothing is passed.
     let registry_path = &args[1];
-
     println!("Registry path: {}", registry_path);
 
-    let reg_path = Path::new(registry_path);
+    // check the path.
+    check_path_panic(registry_path);
 
-    // check if path exists.
-    if !Path::exists(reg_path) {
-        // return with an error.
-        panic!("{} does not exist.", registry_path);
-    }
+    // create the rule index.
 
-    // check if path is a directory. Technically, we could have just done this
-    // check but we wouldn't know if the path existed vs. is not a directory.
-    if !Path::is_dir(reg_path) {
-        // return with an error.
-        panic!("{} is not a directory.", registry_path);
-    }
+    let rule_index: RuleIndex = RuleIndex::from_path(registry_path.to_string(), None, None);
 
-    // now we can recursively read all files in the path.
-    let rule_files = read_rules(registry_path.to_string());
+    // second argument is the path to rulsets.
+    let ruleset_path = &args[2];
+    println!("Ruleset path: {}", ruleset_path);
 
-    println!("{:?}", rule_files);
+    // find all rulesets
+    let set_paths = RuleSet::find_all(ruleset_path.to_string(), None, None);
+    // deserialize them
 
-}
+    let mut rulesets: HashMap<String, RuleFile> = HashMap::new();
 
-fn is_hidden(entry: &DirEntry) -> bool {
-    entry.file_name()
-        .to_str()
-        .map(|s| s.starts_with("."))
-        .unwrap_or(false)
-}
-
-fn read_rules(path: String) -> Vec<String> {
-
-    let mut results: Vec<String> = Vec::new();
-
-    let walker = WalkDir::new(path).into_iter();
-
-    // ignore errors and skip hidden files/directories
-    for entry in walker.filter_entry(|e| !is_hidden(e)).filter_map(|e| e.ok()) {
-
-        let file_path = entry.path();
-
-        if let Some(extension) = file_path.extension() {
-            if let Some(ext_str) = extension.to_str() {
-                if RULE_EXTENSION.contains(&ext_str) {
-                    // println!("{:?} is a rule.", file_path.as_os_str());
-                    results.push(file_path.to_string_lossy().as_ref().to_string());
-                }
+    for p in set_paths {
+        // read the file
+        if let Ok(yaml) = read_file_to_string(p.as_str()) {
+            // deserialize it.
+            if let Ok(rs) = RuleSet::from_yaml(yaml) {
+                // create a ruleset from rule IDs.
+                let rf = rule_index.create_ruleset(rs.rules);
+                // add it to the set.
+                rulesets.insert(rs.name, rf);
             }
         }
     }
-    results
+
+    // print all rulesets
+    for key in rulesets.keys() {
+        println!("ruleset name: {}", key);
+        // get the rules IDs in the ruleset.
+        for ru in rulesets[key].rules.clone() {
+            println!("{}", ru.id);
+        }
+        println!("-----");
+    }
+
+    
+
+    // now we can recursively read all files in the path.
+    // let rule_files = read_rules(registry_path.to_string());
+
+    // println!("{:?}", rule_files);
 
 }
 

@@ -1,0 +1,4 @@
+name: ruleset2
+rules:
+- snprintf-insecure-use
+- memcpy-insecure-use

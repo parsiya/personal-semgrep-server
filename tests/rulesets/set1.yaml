@@ -1,0 +1,5 @@
+name: ruleset1
+rules:
+- arrays-out-of-bounds-access
+- potentially-uninitialized-pointer
+- snprintf-insecure-use
