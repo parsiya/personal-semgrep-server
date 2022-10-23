@@ -1,0 +1,3 @@
+[submodule "src/semgrep-rs"]
+	path = src/semgrep-rs
+	url = git@github.com:parsiya/semgrep-rs.git

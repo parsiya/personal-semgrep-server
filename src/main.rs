@@ -1,6 +1,6 @@
 use std::{env, collections::HashMap, io, fs};
 
-use semgrep_rs::{utils::check_path_panic, RuleIndex, semgrep_rule::RuleFile};
+use semgrep_rs::{utils::check_path_panic, GenericRuleIndex};
 
 use crate::ruleset::RuleSet;
 
@@ -25,8 +25,7 @@ fn main() {
     check_path_panic(registry_path);
 
     // create the rule index.
-
-    let rule_index: RuleIndex = RuleIndex::from_path(registry_path.to_string(), None, None);
+    let generic_rule_index: GenericRuleIndex = GenericRuleIndex::from_path_simple(registry_path.to_string());
 
     // second argument is the path to rulsets.
     let ruleset_path = &args[2];
@@ -36,7 +35,7 @@ fn main() {
     let set_paths = RuleSet::find_all(ruleset_path.to_string(), None, None);
     // deserialize them
 
-    let mut rulesets: HashMap<String, RuleFile> = HashMap::new();
+    let mut rulesets: HashMap<String, > = HashMap::new();
 
     for p in set_paths {
         // read the file

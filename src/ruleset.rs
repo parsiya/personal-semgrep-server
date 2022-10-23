@@ -11,11 +11,6 @@ pub struct RuleSet {
 
 impl RuleSet {
 
-    // pub fn new() -> RuleSet {
-    //     let rules: Vec<String> = Vec::new();
-    //     return RuleSet{ rules };
-    // }
-
     pub fn from_yaml(yaml: String) -> serde_yaml::Result<RuleSet> {
         Ok(serde_yaml::from_str::<RuleSet>(&yaml)?)
     }
