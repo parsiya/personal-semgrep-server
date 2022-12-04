@@ -27,8 +27,8 @@ fn main() {
     let generic_rule_index: GenericRuleIndex =
         GenericRuleIndex::from_path_simple(registry_path.to_string());
 
-    for (rule_id, _) in generic_rule_index.get_index() {
-        info!("{}", rule_id);
+    for id in generic_rule_index.get_ids() {
+        info!("{}", id);
     }
 
     // // second argument is the path to rulsets.
