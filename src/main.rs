@@ -1,65 +1,81 @@
-use std::{env, collections::HashMap};
+use std::{collections::HashMap, env};
 
-use semgrep_rs::{GenericRuleIndex, GenericRuleFile, GenericRuleExt};
-use semgrep_rs::{read_file_to_string, check_path_panic};
+use semgrep_rs::{check_path_panic, read_file_to_string};
+use semgrep_rs::{GenericRuleExt, GenericRuleFile, GenericRuleIndex};
 
-use log::{debug, error, info, trace, warn};
-use log4rs;
+use log::info;
 
 mod ruleset;
 use ruleset::RuleSet;
 
-fn main() {
+mod constants;
 
+fn main() {
     log4rs::init_file("logging.yaml", Default::default()).unwrap();
 
     let args: Vec<String> = env::args().collect();
 
     // this will panic if nothing is passed.
     let registry_path = &args[1];
-    
+
     info!("Registry path: {}", registry_path);
 
     // check the path.
     check_path_panic(registry_path);
 
     // create the rule index.
-    let generic_rule_index: GenericRuleIndex = GenericRuleIndex::from_path_simple(registry_path.to_string());
+    let generic_rule_index: GenericRuleIndex =
+        GenericRuleIndex::from_path_simple(registry_path.to_string());
 
-    // second argument is the path to rulsets.
-    let ruleset_path = &args[2];
-    info!("Ruleset path: {}", ruleset_path);
-
-    // find all rulesets
-    let set_paths = RuleSet::find_all_simple(ruleset_path.to_string());
-    // deserialize them
-
-    let mut rulesets: HashMap<String, GenericRuleFile> = HashMap::new();
-
-    for p in set_paths {
-        // read the file
-        if let Ok(yaml) = read_file_to_string(p.as_str()) {
-            // deserialize it.
-            if let Ok(rs) = RuleSet::from_yaml(yaml) {
-                // create a ruleset from rule IDs.
-                let rf = generic_rule_index.create_ruleset(rs.rules);
-                // add it to the set.
-                rulesets.insert(rs.name, rf);
-            }
-        }
+    for (rule_id, _) in generic_rule_index.get_index() {
+        info!("{}", rule_id);
     }
 
-    // print all rulesets
-    for key in rulesets.keys() {
-        info!("ruleset name: {}", key);
-        // get the rules IDs in the ruleset.
-        for ru in rulesets[key].rules.clone() {
-            info!("{}", ru.get_id() );
-        }
-        info!("-----");
-    }
+    // // second argument is the path to rulsets.
+    // let ruleset_path = &args[2];
+    // info!("Ruleset path: {}", ruleset_path);
+
+    // // find all rulesets
+    // let set_paths = RuleSet::find_all_simple(ruleset_path.to_string());
+
+    // let mut rulesets: HashMap<String, GenericRuleFile> = HashMap::new();
+
+    // // create an index of rulesets.
+    // for p in set_paths {
+    //     // read the file
+    //     if let Ok(yaml) = read_file_to_string(p.as_str()) {
+    //         // deserialize it.
+    //         if let Ok(rs) = RuleSet::from_yaml(yaml) {
+    //             // create a ruleset from rule IDs.
+    //             let rf = generic_rule_index.create_ruleset(rs.rules);
+    //             // add it to the set.
+    //             rulesets.insert(rs.name, rf);
+    //         }
+    //     }
+    // }
+
+    // // print all rulesets
+    // for key in rulesets.keys() {
+    //     info!("ruleset name: {}", key);
+    //     // get the rules IDs in the ruleset.
+    //     for ru in rulesets[key].rules.clone() {
+    //         info!("{}", ru.get_id() );
+    //     }
+    //     info!("-----");
+    // }
+    // create a ruleset file.
+    // for (id, rule_file) in rulesets {
+    //     // serialize to YAML and print to output.
+    //     match rule_file.to_string() {
+    //         Ok(s) => info!("{}", s),
+    //         Err(e) => info!("{}", e.to_string()),
+    //     }
+    //     info!("\n")
+    // }
 
     // // read the 3rd parameter to write the ruleset files to disk at that path
+    // This can be a subcommand to create a ruleset from all the rules in a
+    // specific path.
     // let target_path = &args[3];
 
     // // check the path.
@@ -68,7 +84,6 @@ fn main() {
     // // write the rulesets to disk.
 
     // for (id, rule_file) in rulesets {
-
     //     match rule_file.to_string() {
     //         Ok(s) => {
     //             let mut file_name: String = target_path.to_string();
@@ -78,30 +93,37 @@ fn main() {
     //         },
     //         Err(e) => info!("{}", e.to_string()),
     //     };
-      
     // }
 
-    // // create an HTTP server and serve the files.
+    // create an HTTP server and serve the files.
 
-    // use tiny_http::{Server, Response};
+    // use tiny_http::{Response, Server};
 
     // let port = &args[3];
-    // let mut server_address = "127.0.0.1:".to_string();
+    // let mut server_address = constants::LOCALHOST.to_string();
+    // server_address.push_str(constants::SERVER_DELIM);
     // server_address.push_str(port.as_str());
 
     // let server = Server::http(server_address).unwrap();
 
     // for request in server.incoming_requests() {
-    //     info!("received request! method: {:?}, url: {:?}, headers: {:?}",
-    //         request.method(),
-    //         request.url(),
-    //         request.headers()
-    //     );
-    
+
+    //     let url = request.url();
+
+    //     // handle requests here.
+
+    //     info!("method: {}, url: {}", request.method(), request.url());
+
+    //     // request.u
+
+    //     // info!(
+    //     //     "received request! method: {:?}, url: {:?}, headers: {:?}",
+    //     //     request.method(),
+    //     //     request.url(),
+    //     //     request.headers()
+    //     // );
+
     //     let response = Response::from_string("hello world");
     //     _ = request.respond(response);
     // }
-    
-
 }
-

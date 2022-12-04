@@ -2,7 +2,7 @@ appenders:
   my_log:
     kind: console
     encoder:
-      pattern: "{{l}: {m}{n}}"
+      pattern: "{l}: {m}{n}"
 root:
   level: debug
   appenders:
