@@ -1,6 +1,6 @@
 // ----- START RuleSet
 
-use std::{fs, io};
+use semgrep_rs::{find_simple, find, read_file_to_string};
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -16,13 +16,19 @@ impl RuleSet {
     }
 
     pub fn from_file(file: String) -> serde_yaml::Result<RuleSet> {
-        // ZZZ add error handling.
+        // ZZZ add error handling for reading the file.
         let yaml = read_file_to_string(file.as_str()).unwrap();
         Ok(serde_yaml::from_str::<RuleSet>(&yaml)?)
     }
 
+    // find all yaml files in a path, assuming all rulesets end in .yaml or .yml.
     pub fn find_all(path: String, include: Option<Vec<&str>>, exclude: Option<Vec<&str>>) -> Vec<String> {
-        let rulesets = semgrep_rs::find_rules(path, include, exclude);
+        let rulesets = find(path, include, exclude);
+        rulesets
+    }
+
+    pub fn find_all_simple(path: String) -> Vec<String> {
+        let rulesets = find_simple(path);
         rulesets
     }
 
@@ -42,8 +48,3 @@ impl RuleSet {
 
 // ----- END RuleSet
 
-// read a file and return a String.
-pub fn read_file_to_string(file_path: &str) -> io::Result<String> {
-    let contents = fs::read_to_string(file_path)?;
-    Ok(contents)
-}

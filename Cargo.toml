@@ -4,7 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-semgrep-rs = { git = "https://github.com/parsiya/semgrep-rs", branch = "dev" }
+# semgrep-rs = { git = "https://github.com/parsiya/semgrep-rs", branch = "dev" }
 
+# use the local git submodule for now
+semgrep-rs = { path = "src/semgrep-rs" }
+
+# external creates
 serde_yaml = "0.9"
 serde = {version = "1.0"}
+tiny_http = "0.11"
+log = "0.4"
+log4rs = "1.2.0"
