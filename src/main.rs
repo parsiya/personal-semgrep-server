@@ -9,6 +9,7 @@ mod ruleset;
 use ruleset::RuleSet;
 
 mod constants;
+mod diag;
 
 fn main() {
     log4rs::init_file("logging.yaml", Default::default()).unwrap();
@@ -23,13 +24,15 @@ fn main() {
     // check the path.
     check_path_panic(registry_path);
 
-    // create the rule index.
+    // create a simple rule index.
     let generic_rule_index: GenericRuleIndex =
         GenericRuleIndex::from_path_simple(registry_path.to_string());
 
-    for id in generic_rule_index.get_ids() {
-        info!("{}", id);
-    }
+    // create a rule index with complete paths.
+    // let generic_rule_index: GenericRuleIndex =
+    //     GenericRuleIndex::from_path(registry_path.to_string(), None, None, true);
+
+    diag::print_vector(generic_rule_index.get_ids());
 
     // // second argument is the path to rulsets.
     // let ruleset_path = &args[2];
@@ -95,7 +98,7 @@ fn main() {
     //     };
     // }
 
-    // create an HTTP server and serve the files.
+    // // create an HTTP server and serve the files.
 
     // use tiny_http::{Response, Server};
 
@@ -107,7 +110,6 @@ fn main() {
     // let server = Server::http(server_address).unwrap();
 
     // for request in server.incoming_requests() {
-
     //     let url = request.url();
 
     //     // handle requests here.
