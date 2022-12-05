@@ -1,6 +1,6 @@
 use std::{collections::HashMap, env};
 
-use semgrep_rs::{check_path_panic, read_file_to_string};
+use semgrep_rs::{check_path_panic, utils::read_file_to_string};
 use semgrep_rs::{GenericRuleExt, GenericRuleFile, GenericRuleIndex};
 
 use log::info;

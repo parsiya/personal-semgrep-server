@@ -1,35 +1,61 @@
 // ----- START RuleSet
 
-use semgrep_rs::{find_simple, find, read_file_to_string};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use std::io;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RuleSet {
     pub name: String,
-    pub rules: Vec<String>
+    pub rules: Vec<String>,
 }
 
 impl RuleSet {
-
-    pub fn from_yaml(yaml: String) -> serde_yaml::Result<RuleSet> {
-        Ok(serde_yaml::from_str::<RuleSet>(&yaml)?)
+    // create a RuleSet from a YAML string.
+    pub fn from_yaml(yaml: String) -> semgrep_rs::Result<RuleSet> {
+        match serde_yaml::from_str::<RuleSet>(&yaml) {
+            Ok(rs) => Ok(rs),
+            Err(e) => semgrep_rs::Error::wrap_string(e.to_string()),
+        }
     }
 
-    pub fn from_file(file: String) -> serde_yaml::Result<RuleSet> {
-        // ZZZ add error handling for reading the file.
-        let yaml = read_file_to_string(file.as_str()).unwrap();
-        Ok(serde_yaml::from_str::<RuleSet>(&yaml)?)
+    // create a RuleSet from a file.
+    pub fn from_file(file: String) -> semgrep_rs::Result<RuleSet> {
+        match semgrep_rs::utils::read_file_to_string(file.as_str()) {
+            Err(e) => return semgrep_rs::Error::wrap_string(e.to_string()),
+            Ok(str) => match serde_yaml::from_str::<RuleSet>(&str) {
+                Err(e) => return semgrep_rs::Error::wrap_string(e.to_string()),
+                Ok(rs) => Ok(rs),
+            },
+        }
     }
 
-    // find all yaml files in a path, assuming all rulesets end in .yaml or .yml.
-    pub fn find_all(path: String, include: Option<Vec<&str>>, exclude: Option<Vec<&str>>) -> Vec<String> {
-        let rulesets = find(path, include, exclude);
-        rulesets
+    // find all files with extensions in include but not in exclude in a path.
+    pub fn find_all(
+        path: String,
+        include: Option<Vec<&str>>,
+        exclude: Option<Vec<&str>>,
+    ) -> Vec<String> {
+        semgrep_rs::find(path, include, exclude)
     }
 
     pub fn find_all_simple(path: String) -> Vec<String> {
-        let rulesets = find_simple(path);
-        rulesets
+        semgrep_rs::find_simple(path)
+    }
+
+    // serialize the RuleSet as a YAML string.
+    pub fn to_yaml(&self) -> semgrep_rs::Result<String> {
+        match serde_yaml::to_string(&self) {
+            Err(e) => semgrep_rs::Error::wrap_string(e.to_string()),
+            Ok(yaml) => Ok(yaml),
+        }
+    }
+
+    // write the ruleset to a YAML file.
+    pub fn to_file(&self, path: String) -> io::Result<()> {
+        match self.to_yaml() {
+            Err(e) => Err::<(), io::Error>(io::Error::new(io::ErrorKind::InvalidData, e)),
+            Ok(yaml) => semgrep_rs::utils::write_string_to_file(path, yaml),
+        }
     }
 
     // // read all rulesets in a specific path, serialize them and return a vector.
@@ -43,8 +69,6 @@ impl RuleSet {
     //         let rs = match RuleSet::from
     //     }
     // }
-
 }
 
 // ----- END RuleSet
-
