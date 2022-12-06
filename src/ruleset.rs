@@ -12,21 +12,25 @@ pub struct RuleSet {
 impl RuleSet {
     // create a RuleSet from a YAML string.
     pub fn from_yaml(yaml: String) -> semgrep_rs::Result<RuleSet> {
-        match serde_yaml::from_str::<RuleSet>(&yaml) {
-            Ok(rs) => Ok(rs),
-            Err(e) => semgrep_rs::Error::wrap_string(e.to_string()),
-        }
+        serde_yaml::from_str::<RuleSet>(&yaml).map_err(|e| semgrep_rs::Error::new(e.to_string()))
     }
 
     // create a RuleSet from a file.
     pub fn from_file(file: String) -> semgrep_rs::Result<RuleSet> {
-        match semgrep_rs::utils::read_file_to_string(file.as_str()) {
-            Err(e) => return semgrep_rs::Error::wrap_string(e.to_string()),
-            Ok(str) => match serde_yaml::from_str::<RuleSet>(&str) {
-                Err(e) => return semgrep_rs::Error::wrap_string(e.to_string()),
-                Ok(rs) => Ok(rs),
-            },
-        }
+        // match semgrep_rs::utils::read_file_to_string(file.as_str()) {
+        //     Err(e) => return semgrep_rs::Error::wrap_string(e.to_string()),
+        //     Ok(str) => match serde_yaml::from_str::<RuleSet>(&str) {
+        //         Err(e) => return semgrep_rs::Error::wrap_string(e.to_string()),
+        //         Ok(rs) => Ok(rs),
+        //     },
+        // }
+
+        semgrep_rs::utils::read_file_to_string(file.as_str())
+            .map_err(|e| semgrep_rs::Error::new(e.to_string()))
+            .and_then(|str| {
+                serde_yaml::from_str::<RuleSet>(&str)
+                    .map_err(|e| semgrep_rs::Error::new(e.to_string()))
+            })
     }
 
     // find all files with extensions in include but not in exclude in a path.
@@ -44,18 +48,19 @@ impl RuleSet {
 
     // serialize the RuleSet as a YAML string.
     pub fn to_yaml(&self) -> semgrep_rs::Result<String> {
-        match serde_yaml::to_string(&self) {
-            Err(e) => semgrep_rs::Error::wrap_string(e.to_string()),
-            Ok(yaml) => Ok(yaml),
-        }
+        serde_yaml::to_string(&self).map_err(|e| semgrep_rs::Error::new(e.to_string()))
     }
 
     // write the ruleset to a YAML file.
     pub fn to_file(&self, path: String) -> io::Result<()> {
-        match self.to_yaml() {
-            Err(e) => Err::<(), io::Error>(io::Error::new(io::ErrorKind::InvalidData, e)),
-            Ok(yaml) => semgrep_rs::utils::write_string_to_file(path, yaml),
-        }
+        // match self.to_yaml() {
+        //     Err(e) => Err::<(), io::Error>(io::Error::new(io::ErrorKind::InvalidData, e)),
+        //     Ok(yaml) => semgrep_rs::utils::write_string_to_file(path, yaml),
+        // }
+
+        self.to_yaml()
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+            .and_then(|yaml| semgrep_rs::utils::write_string_to_file(path, yaml))
     }
 
     // // read all rulesets in a specific path, serialize them and return a vector.

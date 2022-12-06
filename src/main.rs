@@ -8,7 +8,7 @@ use log::info;
 mod ruleset;
 use ruleset::RuleSet;
 
-mod constants;
+mod api;
 mod diag;
 
 fn main() {
