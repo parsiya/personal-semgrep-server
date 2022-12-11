@@ -1,14 +1,13 @@
 use std::env;
 
-use semgrep_rs::check_path_panic;
-use semgrep_rs::{GenericRuleIndex, PolicyIndex};
+use semgrep_rs::{check_path_panic, GenericRuleIndex, PolicyIndex};
 
 use log::info;
 
+mod server;
 use crate::server::Server;
 
 mod diag;
-mod server;
 
 fn main() {
     // setup logging.
@@ -31,6 +30,7 @@ fn main() {
     // let generic_rule_index: GenericRuleIndex =
     //     GenericRuleIndex::from_path(registry_path.to_string(), None, None, true);
 
+    info!("Processed these rules:");
     diag::print_vector(generic_rule_index.get_ids());
 
     // second argument is the path to policies.
@@ -48,8 +48,12 @@ fn main() {
         info!("{}", k);
     }
 
+    let mut port = &"1234".to_string();
+    // make the 3rd argument optional.
+    if args.len() == 4 {
+        port = &args[3];
+    }
     // create an HTTP server and serve the files.
-    let port = &args[3];
     let server = Server::new_local(port, generic_rule_index, policy_index);
     info!("Server started on: {}", &server.get_address());
     server.start();

@@ -170,6 +170,7 @@ or the complete format (e.g., path.to.rule.directory.rule_file_name.rule_id_in_f
     }
 }
 
+#[allow(dead_code)]
 // extract and return the path parameter from the request path.
 fn get_path_parameter(path: &str, parameter: &str) -> Option<String> {
     let segments: Vec<&str> = path.split('/').collect();
