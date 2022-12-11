@@ -1,4 +1,4 @@
-name: ruleset1
+name: policy1
 rules:
 - arrays-out-of-bounds-access
 - potentially-uninitialized-pointer
