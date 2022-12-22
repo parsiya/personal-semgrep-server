@@ -47,6 +47,9 @@ impl Server {
     // start the server and populate the server field. We will panic if it
     // there's an error but that's expected. We want to know if server fails.
     pub fn start(mut self) {
+        // do preprocessing.
+        // create things that can be created once and reused.
+
         self.server = Some(tiny_http::Server::http(&self.address).unwrap());
 
         loop {
@@ -81,7 +84,7 @@ impl Server {
         // split the path by `/`.
         let segments: Vec<&str> = path.split('/').collect();
 
-        // paths shorter than three segments are invalid.
+        // paths shorter than 3 segments are invalid.
         let path_length = segments.len();
         if path_length < 3 {
             return self.not_found();
@@ -93,11 +96,20 @@ impl Server {
         // check for /c/
         match segments[path_length - 3] {
             "c" => match segments[path_length - 2] {
-                // rule
-                "r" => self.serve_rule(&segments[path_length - 1].to_string()),
-                // policy
+                // rule: /c/r/{ruleid}
+                "r" => {
+                    // add an exception for the `all` rule
+                    let rule_id = &segments[path_length - 1];
+                    match rule_id {
+                        // serve the policy `all` for /c/r/all.
+                        &"all" => self.serve_policy(rule_id),
+                        // serve the rule for everything else.
+                        _ => self.serve_rule(rule_id),
+                    }
+                }
+                // policy: /c/p/{policy_id}
                 "p" => self.serve_policy(&segments[path_length - 1].to_string()),
-                // everything else
+                // every othe route.
                 _ => self.not_found(),
             },
             _ => self.not_found(),

@@ -1,13 +1,15 @@
-use std::env;
+use std::{env, process};
 
 use semgrep_rs::{check_path_panic, GenericRuleIndex, PolicyIndex};
 
-use log::info;
+use log::{error, info};
 
 mod server;
 use crate::server::Server;
 
 mod diag;
+
+const USAGE: &str = "path/to/rules path/to/policies [1234]";
 
 fn main() {
     // setup logging.
@@ -15,20 +17,25 @@ fn main() {
 
     let args: Vec<String> = env::args().collect();
 
-    // this will panic if nothing is passed.
+    // check the number of arguments.
+    if args.len() < 1 {
+        info!("{}", USAGE);
+        error!("Provide at least one argument.");
+        process::exit(1);
+        // then return an exit code and leave.
+    }
+
     let registry_path = &args[1];
-
     info!("Registry path: {}", registry_path);
-
-    // check the path.
+    // check the path and panic if it doesn't exist.
     check_path_panic(registry_path);
 
-    // create a simple rule index.
-    let generic_rule_index: GenericRuleIndex = GenericRuleIndex::from_path_simple(registry_path);
+    // create a simple rule index. panic if we coudldn't do it.
+    let generic_rule_index = GenericRuleIndex::from_path_simple(registry_path).unwrap();
 
     // create a rule index with complete paths.
     // let generic_rule_index: GenericRuleIndex =
-    //     GenericRuleIndex::from_path(registry_path.to_string(), None, None, true);
+    //     GenericRuleIndex::from_path(registry_path.to_string(), None, None, true).unwrap();
 
     info!("Processed these rules:");
     diag::print_vector(generic_rule_index.get_ids());
@@ -37,8 +44,9 @@ fn main() {
     let policy_path = &args[2];
     info!("Policy path: {}", policy_path);
 
-    // create a PolicyIndex.
-    let policy_index = PolicyIndex::from_path_simple(policy_path, &generic_rule_index);
+    // create a PolicyIndex. we want to panic here because if the policy index
+    // cannot be created, then the server cannot function.
+    let policy_index = PolicyIndex::from_path_simple(policy_path, &generic_rule_index).unwrap();
 
     info!("Policy index created.");
     let index = policy_index.get_index();
@@ -49,7 +57,7 @@ fn main() {
     }
 
     let mut port = &"1234".to_string();
-    // make the 3rd argument optional.
+    // make the 3rd argument optional, default value is 1234.
     if args.len() == 4 {
         port = &args[3];
     }

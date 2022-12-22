@@ -1,0 +1,45 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'private-semgrep-registry'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=private-semgrep-registry",
+                    "--package=private-semgrep-registry"
+                ],
+                "filter": {
+                    "name": "private-semgrep-registry",
+                    "kind": "bin"
+                }
+            },
+            "args": ["tests/rules", "tests/policies"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'private-semgrep-registry'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=private-semgrep-registry",
+                    "--package=private-semgrep-registry"
+                ],
+                "filter": {
+                    "name": "private-semgrep-registry",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
