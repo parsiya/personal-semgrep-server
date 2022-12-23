@@ -1,68 +1,99 @@
-use std::{env, process};
+use std::fmt;
 
+use clap::Parser;
 use semgrep_rs::{check_path_panic, GenericRuleIndex, PolicyIndex};
 
-use log::{error, info};
+use log::info;
 
 mod server;
 use crate::server::Server;
 
-mod diag;
+// TODO: add this usage to the readme then remove it from code.
 
-const USAGE: &str = "path/to/rules path/to/policies [1234]";
+// clap CLI struct.
+#[derive(Parser, Debug)]
+#[command(
+    override_usage = "./private-semgrep-server -r path/to/rules/ [-p path/to/policies/] [-s 9090] [-q]"
+)]
+#[command(version = "0.1")]
+#[command(about = "Starts a personal Semgrep server", long_about = None)]
+struct Cli {
+    /// Path to rules (required)
+    #[arg(short, long)]
+    rules: String,
+
+    /// Path to policies (optional)
+    #[arg(short, long)]
+    policies: Option<String>,
+
+    /// Server port (optional)
+    #[arg(short, long = "port", default_value_t = 9090)]
+    server_port: i32,
+
+    /// Turn off logging (optional)
+    #[arg(short, long, default_value_t = false)]
+    quiet: bool,
+
+    /// Use complete ruleIDs (optional)
+    #[arg(short, long)]
+    complete: bool,
+}
 
 fn main() {
-    // setup logging.
-    log4rs::init_file("logging.yaml", Default::default()).unwrap();
+    let args = Cli::parse();
 
-    let args: Vec<String> = env::args().collect();
-
-    // check the number of arguments.
-    if args.len() < 1 {
-        info!("{}", USAGE);
-        error!("Provide at least one argument.");
-        process::exit(1);
-        // then return an exit code and leave.
+    // setup logging if quiet is not set.
+    match args.quiet {
+        true => (),
+        false => log4rs::init_file("logging.yaml", Default::default()).unwrap(),
     }
 
-    let registry_path = &args[1];
-    info!("Registry path: {}", registry_path);
+    // check the rules path and panic if it's not correct.
+    info!("Rules path: {}", args.rules);
     // check the path and panic if it doesn't exist.
-    check_path_panic(registry_path);
+    check_path_panic(&args.rules);
 
-    // create a simple rule index. panic if we coudldn't do it.
-    let generic_rule_index = GenericRuleIndex::from_path_simple(registry_path).unwrap();
+    // create the rule index and panic if it didn't happen.
+    let generic_rule_index: GenericRuleIndex =
+        GenericRuleIndex::from_path(&args.rules, None, None, args.complete).unwrap();
+    // log all the rules.
+    info!("Created the rule index at {}", &args.rules);
+    info!("Processed {} rules:", generic_rule_index.len());
+    print_vector(generic_rule_index.get_ids());
+    info!("----------");
 
-    // create a rule index with complete paths.
-    // let generic_rule_index: GenericRuleIndex =
-    //     GenericRuleIndex::from_path(registry_path.to_string(), None, None, true).unwrap();
+    // read the policies if a path is provided.
+    let policy_index: PolicyIndex = match &args.policies {
+        // create the policy index from the policies in the  provided path.
+        Some(p) => {
+            info!("Policy path: {}", p);
+            PolicyIndex::from_path_simple(&p, &generic_rule_index).unwrap()
+        }
+        // only create the all policy.
+        None => {
+            info!("No policy path provided, only creating the 'all' policy");
+            PolicyIndex::empty(&generic_rule_index).unwrap()
+        }
+    };
 
-    info!("Processed these rules:");
-    diag::print_vector(generic_rule_index.get_ids());
+    // log all the policies.
+    info!("Loaded {} policies:", policy_index.len());
+    print_vector(policy_index.get_ids());
+    info!("----------");
 
-    // second argument is the path to policies.
-    let policy_path = &args[2];
-    info!("Policy path: {}", policy_path);
-
-    // create a PolicyIndex. we want to panic here because if the policy index
-    // cannot be created, then the server cannot function.
-    let policy_index = PolicyIndex::from_path_simple(policy_path, &generic_rule_index).unwrap();
-
-    info!("Policy index created.");
-    let index = policy_index.get_index();
-    info!("Loaded {} policies.", index.len());
-    // print all policy names.
-    for k in index.keys() {
-        info!("{}", k);
-    }
-
-    let mut port = &"1234".to_string();
-    // make the 3rd argument optional, default value is 1234.
-    if args.len() == 4 {
-        port = &args[3];
-    }
     // create an HTTP server and serve the files.
-    let server = Server::new_local(port, generic_rule_index, policy_index);
+    let server = Server::new_local(
+        &args.server_port.to_string(),
+        generic_rule_index,
+        policy_index,
+    );
     info!("Server started on: {}", &server.get_address());
     server.start();
+}
+
+// print_vector logs the contents of a vector.
+pub(crate) fn print_vector<T: fmt::Debug>(vec: Vec<T>) {
+    for item in vec {
+        info!("{:?}", item);
+    }
 }

@@ -4,6 +4,6 @@ appenders:
     encoder:
       pattern: "{l}: {m}{n}"
 root:
-  level: debug
+  level: info
   appenders:
     - my_log

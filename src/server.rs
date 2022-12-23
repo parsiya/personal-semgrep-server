@@ -3,7 +3,7 @@
 use std::io::Cursor;
 use std::str::FromStr;
 
-use log::error;
+use log::{error, info};
 use semgrep_rs::{GenericRuleExt, PolicyIndex};
 use tiny_http::{Header, Method, Request, Response};
 
@@ -61,9 +61,10 @@ impl Server {
                 .map_err(|e| error!("Error receiving request: {}", e.to_string()))
                 .unwrap();
 
+            info!("Received request: {}", request.url());
             let response = self.handle_request(&request);
 
-            // ZZZ let's ignore the result for now.
+            // TODO: Let's ignore the result for now. Handle it later.
             let _ = request.respond(response);
         }
     }
@@ -178,7 +179,7 @@ or the complete format (e.g., path.to.rule.directory.rule_file_name.rule_id_in_f
     // ok_response returns a 200 response with the provided content.
     fn ok_response(content: String) -> Response<Cursor<Vec<u8>>> {
         Response::from_string(content)
-            .with_header(Header::from_str("Content-Type: text/yaml").unwrap())
+            .with_header(Header::from_str("Content-Type: text/yaml; charset=utf-8").unwrap())
     }
 }
 
