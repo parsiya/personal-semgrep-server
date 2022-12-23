@@ -6,7 +6,9 @@ use semgrep_rs::{check_path_panic, GenericRuleIndex, PolicyIndex};
 use log::info;
 
 mod server;
-use crate::server::Server;
+use server::Server;
+
+mod template;
 
 // TODO: add this usage to the readme then remove it from code.
 

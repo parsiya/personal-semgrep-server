@@ -4,10 +4,11 @@ use std::io::Cursor;
 use std::str::FromStr;
 
 use log::{error, info};
+use log4rs::append::rolling_file::policy;
 use semgrep_rs::{GenericRuleExt, PolicyIndex};
 use tiny_http::{Header, Method, Request, Response};
 
-use crate::GenericRuleIndex;
+use crate::{template::TemplateInfo, GenericRuleIndex};
 
 // localhost
 const LOCALHOST: &str = "127.0.0.1:";
@@ -18,17 +19,23 @@ pub struct Server {
     server: Option<tiny_http::Server>,
     rule_index: GenericRuleIndex,
     policy_index: PolicyIndex,
+    index_page: String,
 }
 
 impl Server {
     // creates a new server, note that server is not initialized and you must
     // call start first.
     pub fn new(address: String, rule_index: GenericRuleIndex, policy_index: PolicyIndex) -> Server {
+        // generate the index page.
+        let t = TemplateInfo::new(rule_index.get_ids(), policy_index.get_ids());
+        let index_page = t.render_index().unwrap();
+
         Server {
             address,
             server: None,
             rule_index,
             policy_index,
+            index_page,
         }
     }
 
@@ -81,6 +88,10 @@ impl Server {
         }
 
         let path = request.url();
+
+        if path == "/" || path == "index" || path == "index.html" || path == "index.htm" {
+            return self.serve_index();
+        }
 
         // split the path by `/`.
         let segments: Vec<&str> = path.split('/').collect();
@@ -146,41 +157,49 @@ impl Server {
 
     // not_found returns the 404 page with some examples.
     fn not_found(&self) -> Response<Cursor<Vec<u8>>> {
-        let message = format!(
+        let data = format!(
             "404 not found.\n\nRules: {}/c/r/{{ruleid}}\n\nPolicies: {}/c/p/{{policyname}}",
             self.address, self.address
         );
+        create_response(data, "Content-Type: text/plain", 404)
+    }
 
-        Response::from_string::<String>(message)
-            .with_status_code(404)
-            .with_header(Header::from_str("Content-Type: text/plain").unwrap())
+    // serve_index returns the server's index.html page.
+    fn serve_index(&self) -> Response<Cursor<Vec<u8>>> {
+        create_response(
+            self.index_page.clone(),
+            "Content-Type: text/html; charset=utf-8",
+            200,
+        )
     }
 
     // rule_not_found returns a 404 when a rule is not found.
-    fn rule_not_found(msg: String) -> Response<Cursor<Vec<u8>>> {
-        let message = format!(
+    fn rule_not_found(message: String) -> Response<Cursor<Vec<u8>>> {
+        let data = format!(
             r#"{}
-Check if you're using the short rule ID format (e.g., rule_id_in_file)
-or the complete format (e.g., path.to.rule.directory.rule_file_name.rule_id_in_file)"#,
-            msg,
+    Check if you're using the short rule ID format (e.g., rule_id_in_file)
+    or the complete format (e.g., path.to.rule.directory.rule_file_name.rule_id_in_file)"#,
+            message,
         );
-        Response::from_string::<String>(message)
-            .with_status_code(404)
-            .with_header(Header::from_str("Content-Type: text/plain").unwrap())
+        create_response(data, "Content-Type: text/plain", 404)
     }
 
     // policy_not_found returns a 404 when a policy is not found.
-    fn policy_not_found(message: String) -> Response<Cursor<Vec<u8>>> {
-        Response::from_string::<String>(message)
-            .with_status_code(404)
-            .with_header(Header::from_str("Content-Type: text/plain").unwrap())
+    fn policy_not_found(data: String) -> Response<Cursor<Vec<u8>>> {
+        create_response(data, "Content-Type: text/plain", 404)
     }
 
     // ok_response returns a 200 response with the provided content.
-    fn ok_response(content: String) -> Response<Cursor<Vec<u8>>> {
-        Response::from_string(content)
-            .with_header(Header::from_str("Content-Type: text/yaml; charset=utf-8").unwrap())
+    fn ok_response(data: String) -> Response<Cursor<Vec<u8>>> {
+        create_response(data, "Content-Type: text/yaml; charset=utf-8", 200)
     }
+}
+
+// creates a simple response with the provided message, status code and header.
+fn create_response(data: String, header: &str, status_code: i32) -> Response<Cursor<Vec<u8>>> {
+    Response::from_string::<String>(data)
+        .with_header(Header::from_str(header).unwrap())
+        .with_status_code(status_code)
 }
 
 #[allow(dead_code)]
