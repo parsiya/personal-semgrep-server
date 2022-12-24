@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Private Semgrep Server</title>
+        <style type="text/css">
+          body{
+            margin:40px auto;
+            max-width:1000px;
+            line-height:1.6;
+            font-weight: 350;
+            font-size:20px;
+            background-color: rgb(18, 18, 18);
+            color: rgb(220,220,220);
+            padding:0 10px
+          }
+          a {
+            color: rgb(220,220,220);
+          }
+          @media screen and (prefers-color-scheme: light) {
+            body {
+              color: black;
+              font-weight: 400;
+            }
+            a {
+              color: black;
+            }
+          }
+          h1,h2,h3{
+            line-height:1.2
+          }
+          .row{
+            display:flex
+          }
+          .column{
+            flex:50%;
+          }
+        </style>
+  </head>
+  <body>
+    <header>
+      <h1>Private Semgrep Server</h1>
+    </header>
+    <div class="row">
+      <div class="column">
+        <h3>Policies</h3>
+        <ul>
+          {% for policy in policies %}
+            <li><a href="/c/p/{{policy}}">{{policy}}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="column">
+        <h3>Rules</h3>
+        <ul>
+          {% for rule in rules %}
+            <li><a href="/c/r/{{rule}}">{{rule}}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>
+    

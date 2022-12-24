@@ -7,7 +7,7 @@ rules:
         metavariable: $FUNC
         regex: .*(encode|decode).*
   message: |
-      $FUNC name contains encode/decode. These functions are usually intersting.     
+      $FUNC name contains encode/decode. These functions are usually intersting.
   languages:
     - cpp
     - c

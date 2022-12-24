@@ -13,6 +13,12 @@ pub(crate) struct TemplateInfo {
 
 impl TemplateInfo {
     pub(crate) fn new(rules: Vec<String>, policies: Vec<String>) -> TemplateInfo {
+        let mut rules = rules;
+        rules.sort();
+
+        let mut policies = policies;
+        policies.sort();
+
         TemplateInfo { rules, policies }
     }
 
@@ -22,12 +28,16 @@ impl TemplateInfo {
         //     Err(e) => return Error::wrap_string(e.to_string()),
         // };
 
-        let tera = Tera::new("*.html").map_err(|e| Error::new(e.to_string()))?;
-
-        let mut ctx = Context::from_serialize(self).map_err(|e| Error::new(e.to_string()))?;
-        ctx.insert("info", self);
-
-        tera.render("index.html", &ctx)
+        let template = include_str!("data/index.html");
+        let mut tera = Tera::default();
+        // we shouldn't get any errors because the template is hardcoded.
+        tera.add_raw_template("index", template)
+            .map_err(|e| Error::new(e.to_string()))?;
+        // serialize the template into a context.
+        let ctx = Context::from_serialize(self).map_err(|e| Error::new(e.to_string()))?;
+        // ctx.insert("info", self);
+        // render the template and return.
+        tera.render("index", &ctx)
             .map_err(|e| Error::new(e.to_string()))
     }
 }

@@ -4,7 +4,6 @@ use std::io::Cursor;
 use std::str::FromStr;
 
 use log::{error, info};
-use log4rs::append::rolling_file::policy;
 use semgrep_rs::{GenericRuleExt, PolicyIndex};
 use tiny_http::{Header, Method, Request, Response};
 

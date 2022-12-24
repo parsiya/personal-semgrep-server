@@ -10,8 +10,6 @@ use server::Server;
 
 mod template;
 
-// TODO: add this usage to the readme then remove it from code.
-
 // clap CLI struct.
 #[derive(Parser, Debug)]
 #[command(
@@ -36,7 +34,7 @@ struct Cli {
     #[arg(short, long, default_value_t = false)]
     quiet: bool,
 
-    /// Use complete ruleIDs (optional)
+    /// Use complete rule IDs (optional)
     #[arg(short, long)]
     complete: bool,
 }
@@ -44,10 +42,10 @@ struct Cli {
 fn main() {
     let args = Cli::parse();
 
-    // setup logging if quiet is not set.
+    // setup logging if the quiet flag is not set.
     match args.quiet {
         true => (),
-        false => log4rs::init_file("logging.yaml", Default::default()).unwrap(),
+        false => init_logging(),
     }
 
     // check the rules path and panic if it's not correct.
@@ -94,8 +92,46 @@ fn main() {
 }
 
 // print_vector logs the contents of a vector.
-pub(crate) fn print_vector<T: fmt::Debug>(vec: Vec<T>) {
+fn print_vector<T: fmt::Debug>(vec: Vec<T>) {
     for item in vec {
         info!("{:?}", item);
     }
+}
+
+use log::LevelFilter;
+use log4rs::{
+    append::console::ConsoleAppender,
+    config::{Appender, Root},
+    encode::pattern::PatternEncoder,
+};
+
+// init_logging configures log4rs for logging.
+// based on https://github.com/estk/log4rs/blob/master/examples/json_logger.rs.
+// sets the following YAML log file.
+/*
+appenders:
+  my_log:
+    kind: console
+    encoder:
+      pattern:
+root:
+  level: info
+  appenders:
+    - my_log
+*/
+fn init_logging() {
+    let pattern = PatternEncoder::new("{l}: {m}{n}");
+    let my_log = ConsoleAppender::builder()
+        .encoder(Box::new(pattern))
+        .build();
+
+    let appender = Appender::builder().build("my_log", Box::new(my_log));
+    let root = Root::builder().appender("my_log").build(LevelFilter::Info);
+
+    let cfg = log4rs::config::Config::builder()
+        .appender(appender)
+        .build(root)
+        .unwrap();
+
+    log4rs::init_config(cfg).unwrap();
 }

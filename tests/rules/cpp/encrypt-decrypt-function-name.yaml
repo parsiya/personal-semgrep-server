@@ -7,7 +7,7 @@ rules:
         metavariable: $FUNC
         regex: .*(encrypt|decrypt).*
   message: |
-      $FUNC name contains encrypt/decrypt. These functions are usually intersting.     
+      $FUNC name contains encrypt/decrypt. These functions are usually intersting.
   languages:
     - cpp
     - c

@@ -1,9 +1,0 @@
-appenders:
-  my_log:
-    kind: console
-    encoder:
-      pattern: "{l}: {m}{n}"
-root:
-  level: info
-  appenders:
-    - my_log
