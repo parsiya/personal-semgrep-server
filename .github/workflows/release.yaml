@@ -1,4 +1,5 @@
 # create a release when a new tag is created.
+
 name: Release from tag
 on:
   push:
@@ -7,5 +8,30 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: softprops/action-gh-release@v1
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true # this is needed to populate semgrep-rs
+      - name: Create a release
+        uses: softprops/action-gh-release@v1
+      # based on https://github.com/timabell/gitopolis/blob/main/.github/workflows/_release.yml
+      - name: Setup
+        run: cargo install -f cross
+      - name: Build-linux
+        run: cross build --target x86_64-unknown-linux-gnu --release
+      - name: Build-win
+        run: cross build --target x86_64-pc-windows-gnu --release
+      - name: Package Linux
+        run: tar -czvf private-semgrep-server-linux-x86_64.tar.gz -C target/x86_64-unknown-linux-gnu/release/ private-semgrep-server
+      - name: Package Windows
+        run: zip private-semgrep-server-windows-x86_64.zip target/x86_64-pc-windows-gnu/release/private-semgrep-server.exe
+      - name: Publish
+        uses: ncipollo/release-action@v1
+        # if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          artifacts: private-semgrep-server-linux-x86_64.tar.gz,private-semgrep-server-windows-x86_64.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Build-darwin-x64
+      # - name: Build-darwin-arm
