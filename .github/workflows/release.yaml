@@ -1,0 +1,11 @@
+# create a release when a new tag is created.
+name: Release from tag
+on:
+  push:
+    tags:
+      - "v*"
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: softprops/action-gh-release@v1
