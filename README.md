@@ -18,6 +18,8 @@ development.
 ## Quickstart
 
 ```bash
+$ git clone https://github.com/parsiya/private-semgrep-server
+$ git submodule update --init --recursive
 $ cargo build
 $ ./target/debug/personal-semgrep-server -r tests/rules/ -p tests/policies/
 # run all rules against your code
@@ -140,3 +142,13 @@ to the [Semgrep Playground][sem-play] to allow people to run it locally for
 proprietary rules/code.
 
 [sem-play]: https://semgrep.dev/playground/
+
+## License
+Rust likes dual-licensing like this so here we go.
+
+Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or
+[MIT license](LICENSE-MIT).
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in this repository by you, as defined in the Apache-2.0 license,
+shall be dual licensed as above, without any additional terms or conditions.
