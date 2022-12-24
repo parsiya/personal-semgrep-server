@@ -14,8 +14,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true # this is needed to populate semgrep-rs
-      - name: Create a release
-        uses: softprops/action-gh-release@v1
+      # - name: Create a release
+      #   uses: softprops/action-gh-release@v1
       # based on https://github.com/timabell/gitopolis/blob/main/.github/workflows/_release.yml
       - name: Setup
         run: cargo install -f cross
@@ -29,7 +29,7 @@ jobs:
         run: zip private-semgrep-server-windows-x86_64.zip target/x86_64-pc-windows-gnu/release/private-semgrep-server.exe
       - name: Publish
         uses: ncipollo/release-action@v1
-        # if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
           artifacts: private-semgrep-server-linux-x86_64.tar.gz,private-semgrep-server-windows-x86_64.zip
           token: ${{ secrets.GITHUB_TOKEN }}
