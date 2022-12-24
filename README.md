@@ -12,6 +12,9 @@ It was inspired by [wahyuhadi/semgrep-server-rules][go-server].
 
 [go-server]: https://github.com/wahyuhadi/semgrep-server-rules
 
+I will try to keep the `main` branch usable. The `dev` branch is used for
+development.
+
 ## Quickstart
 
 ```bash
