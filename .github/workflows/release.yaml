@@ -22,14 +22,14 @@ jobs:
       - name: Build-win
         run: cross build --target x86_64-pc-windows-gnu --release
       - name: Package Linux
-        run: tar -czvf private-semgrep-server-linux-x86_64.tar.gz -C target/x86_64-unknown-linux-gnu/release/ private-semgrep-server
+        run: tar -czvf personal-semgrep-server-linux-x86_64.tar.gz -C target/x86_64-unknown-linux-gnu/release/ personal-semgrep-server
       - name: Package Windows
-        run: zip private-semgrep-server-windows-x86_64.zip target/x86_64-pc-windows-gnu/release/private-semgrep-server.exe
+        run: zip personal-semgrep-server-windows-x86_64.zip target/x86_64-pc-windows-gnu/release/personal-semgrep-server.exe
       - name: Publish
         uses: ncipollo/release-action@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          artifacts: private-semgrep-server-linux-x86_64.tar.gz,private-semgrep-server-windows-x86_64.zip
+          artifacts: personal-semgrep-server-linux-x86_64.tar.gz,personal-semgrep-server-windows-x86_64.zip
           token: ${{ secrets.GITHUB_TOKEN }}
       # - name: Build-darwin-x64 # TODO
       # - name: Build-darwin-arm # TODO
