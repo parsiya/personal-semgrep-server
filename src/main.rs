@@ -13,7 +13,7 @@ mod template;
 // clap CLI struct.
 #[derive(Parser, Debug)]
 #[command(
-    override_usage = "./private-semgrep-server -r path/to/rules/ [-p path/to/policies/] [-s 9090] [-q]"
+    override_usage = "./personal-semgrep-server -r path/to/rules/ [-p path/to/policies/] [-s 9090] [-q]"
 )]
 #[command(version = "0.1")]
 #[command(about = "Starts a personal Semgrep server", long_about = None)]
@@ -55,7 +55,7 @@ fn main() {
 
     // create the rule index and panic if it didn't happen.
     let generic_rule_index: GenericRuleIndex =
-        GenericRuleIndex::from_path(&args.rules, None, None, args.complete).unwrap();
+        GenericRuleIndex::from_paths(vec![args.rules.as_str()], None, None, args.complete).unwrap();
     // log all the rules.
     info!("Created the rule index at {}", &args.rules);
     info!("Processed {} rules:", generic_rule_index.len());

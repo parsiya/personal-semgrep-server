@@ -1,13 +1,13 @@
 [package]
-name = "private-semgrep-server"
-version = "0.2.0"
+name = "personal-semgrep-server"
+version = "0.2.1"
 edition = "2021"
 
 [dependencies]
-# semgrep-rs = { git = "https://github.com/parsiya/semgrep-rs", branch = "dev" }
+semgrep-rs = { git = "https://github.com/parsiya/semgrep-rs", branch = "dev" }
 
 # use the local git submodule for now
-semgrep-rs = { path = "src/semgrep-rs" }
+# semgrep-rs = { path = "src/semgrep-rs" }
 
 # external creates
 serde_yaml = "0.9"

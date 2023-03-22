@@ -7,15 +7,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'private-semgrep-registry'",
+            "name": "Debug executable 'personal-semgrep-server'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=private-semgrep-registry",
-                    "--package=private-semgrep-registry"
+                    "--bin=personal-semgrep-server",
+                    "--package=personal-semgrep-server"
                 ],
                 "filter": {
-                    "name": "private-semgrep-registry",
+                    "name": "personal-semgrep-server",
                     "kind": "bin"
                 }
             },
@@ -25,16 +25,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'private-semgrep-registry'",
+            "name": "Debug unit tests in executable 'personal-semgrep-server'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=private-semgrep-registry",
-                    "--package=private-semgrep-registry"
+                    "--bin=personal-semgrep-server",
+                    "--package=personal-semgrep-server"
                 ],
                 "filter": {
-                    "name": "private-semgrep-registry",
+                    "name": "personal-semgrep-server",
                     "kind": "bin"
                 }
             },
