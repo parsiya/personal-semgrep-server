@@ -55,7 +55,7 @@ fn main() {
 
     // create the rule index and panic if it didn't happen.
     let generic_rule_index: GenericRuleIndex =
-        GenericRuleIndex::from_paths(vec![args.rules.as_str()], None, None, args.complete).unwrap();
+        GenericRuleIndex::from_paths(vec![&args.rules], None, None, args.complete).unwrap();
     // log all the rules.
     info!("Created the rule index at {}", &args.rules);
     info!("Processed {} rules:", generic_rule_index.len());
